@@ -8,7 +8,7 @@ namespace MinhaApi.Controllers;
 public class CepsController : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetCeps([FromQuery(Name = "cep[]")] string[]? cep)
+    public async Task<IActionResult> GetCepsAsync([FromQuery(Name = "cep[]")] string[]? cep)
     {
         if (cep == null || cep.Length == 0)
             return BadRequest("Nenhum CEP informado.");
@@ -40,7 +40,7 @@ public class CepsController : ControllerBase
     }
 
     [HttpGet("{cep}")]
-    public async Task<IActionResult> GetCep([FromRoute] string cep)
+    public async Task<IActionResult> GetCepAsync([FromRoute] string cep)
     {
         string? cepValido = CepService.ProcessaCep(cep);
 
