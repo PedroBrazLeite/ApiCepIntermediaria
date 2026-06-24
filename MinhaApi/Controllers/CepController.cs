@@ -2,14 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 
 namespace MinhaApi.Controllers;
+
 [ApiController]
 [Route("ceps")]
 public class CepsController : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetCeps([FromQuery] string ceps)
+    public async Task<IActionResult> GetCeps([FromQuery(Name = "cep[]")] string[]? cep)
     {
-        string?[] cepsValidos = ceps.Split(';', StringSplitOptions.RemoveEmptyEntries)
+        if (cep == null || cep.Length == 0)
+            return BadRequest("Nenhum CEP informado.");
+        
+        string?[] cepsValidos = cep
             .Select(CepService.ProcessaCep)
             .Where(item => item != null)
             .ToArray();
@@ -20,16 +24,12 @@ public class CepsController : ControllerBase
         if (cepsValidos.Length > 10)
             return BadRequest("Máximo de 10 CEPs por requisição.");
         
-      
         try
         {
             var resultados = await CepService
                 .BuscarCepsAsync(cepsValidos!);
-            var encontrados = resultados.Where(r => r.Sucesso).Select(r => r.Resultado);
-
-            if (!encontrados.Any())
-                return NotFound("Nenhum CEP encontrado.");
-
+            var encontrados = resultados.Where(resposta => resposta.Sucesso).Select(resposta => resposta.Resultado);
+            
             return Ok(encontrados);
         }
         catch (TaskCanceledException)
@@ -62,6 +62,5 @@ public class CepsController : ControllerBase
         {
             return BadRequest("tempo excedido");
         }
-        
     }
 }
