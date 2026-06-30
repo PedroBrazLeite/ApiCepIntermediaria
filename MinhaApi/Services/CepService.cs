@@ -1,29 +1,29 @@
-﻿using MinhaApi.Models;
+﻿using MinhaApi.Clients;
+using MinhaApi.Models;
 using Refit;
-    
+
 namespace MinhaApi.Services;
-    
-public static class CepService
+
+public class CepService : ICepService
 {
-    public interface ICep
+    private readonly ICep _client;
+
+    public CepService(ICep client)
     {
-        [Get("/v1/{cep}")]
-        Task<EnderecoResponse> ObterPorCep(string cep);
+        _client = client;
     }
-        
-    static ICep _client = RestService.For<ICep>("https://opencep.com");
-        
-    public static string SanitizarCep(string input)
+    
+    public string SanitizarCep(string input)
     {
         return input.Replace("-", "").Trim();
     }
         
-    public static bool ValidarCep(string input)
+    public bool ValidarCep(string input)
     {
         return input.Length == 8 && input.All(char.IsDigit);
     }
         
-    public static string? ProcessaCep(string input)
+    public string? ProcessaCep(string input)
     {
         var cleanIput =SanitizarCep(input);
         var validado = ValidarCep(cleanIput);
@@ -34,7 +34,7 @@ public static class CepService
         return cleanIput;
     }
         
-    public static async Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)> BuscarCepAsync(string cep)
+    public async Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)> BuscarCepAsync(string cep)
     {
         try
         {
@@ -50,7 +50,7 @@ public static class CepService
         }
     }
         
-    public static async Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)[]> BuscarCepsAsync(string[] ceps)
+    public async Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)[]> BuscarCepsAsync(string[] ceps)
     {
         var tarefas = ceps
             .Select(BuscarCepAsync);

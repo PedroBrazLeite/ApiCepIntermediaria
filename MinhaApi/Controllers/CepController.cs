@@ -7,6 +7,14 @@ namespace MinhaApi.Controllers;
 [Route("ceps")]
 public class CepsController : ControllerBase
 {
+    private readonly ICepService _cepService;
+
+    public CepsController(ICepService cepService)
+    {
+        _cepService = cepService;
+    }
+    
+    
     [HttpGet]
     public async Task<IActionResult> GetCepsAsync([FromQuery(Name = "cep[]")] string[]? cep)
     {
@@ -14,7 +22,7 @@ public class CepsController : ControllerBase
             return BadRequest("Nenhum CEP informado.");
         
         string?[] cepsValidos = cep
-            .Select(CepService.ProcessaCep)
+            .Select(_cepService.ProcessaCep)
             .Where(item => item != null)
             .ToArray();
        
@@ -26,7 +34,7 @@ public class CepsController : ControllerBase
         
         try
         {
-            var resultados = await CepService
+            var resultados = await _cepService
                 .BuscarCepsAsync(cepsValidos!);
             var encontrados = resultados.Where(resposta => resposta.Sucesso).Select(resposta => resposta.Resultado);
             
@@ -42,7 +50,7 @@ public class CepsController : ControllerBase
     [HttpGet("{cep}")]
     public async Task<IActionResult> GetCepAsync([FromRoute] string cep)
     {
-        string? cepValido = CepService.ProcessaCep(cep);
+        string? cepValido = _cepService.ProcessaCep(cep);
 
         if (cepValido == null)
         {
@@ -51,7 +59,7 @@ public class CepsController : ControllerBase
 
         try
         {
-            var resultado = await CepService.BuscarCepAsync(cepValido);
+            var resultado = await _cepService.BuscarCepAsync(cepValido);
             
             if (!resultado.Sucesso)
                 return NotFound($"CEP {cepValido} não encontrado.");
