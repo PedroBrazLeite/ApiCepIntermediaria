@@ -1,4 +1,5 @@
-﻿using MinhaApi.Clients;
+﻿using Microsoft.Extensions.Caching.Hybrid;
+using MinhaApi.Clients;
 using MinhaApi.Models;
 using Refit;
 
@@ -7,10 +8,12 @@ namespace MinhaApi.Services;
 public class CepService : ICepService
 {
     private readonly ICep _client;
+    private readonly HybridCache _cache;
 
-    public CepService(ICep client)
+    public CepService(ICep client, HybridCache cache)
     {
         _client = client;
+        _cache = cache;
     }
     
     public string SanitizarCep(string input)
@@ -34,12 +37,18 @@ public class CepService : ICepService
         return cleanIput;
     }
         
-    public async Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)> BuscarCepAsync(string cep)
+    public async Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)> BuscarCepAsync(string cep, CancellationToken cancellationToken)
     {
         try
         {
+            string cacheKey = $"cep:{cep}";
 
-            var endereco = await _client.ObterPorCepAsync(cep);
+            var endereco = await _cache.GetOrCreateAsync(
+                cacheKey,
+                async cancel => await _client.ObterPorCepAsync(cep, cancel),
+                cancellationToken: cancellationToken
+            );
+            
             return (true, cep, endereco);
         }
         catch (ApiException ex)
@@ -48,13 +57,5 @@ public class CepService : ICepService
 
             return (false, cep, null);
         }
-    }
-        
-    public async Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)[]> BuscarCepsAsync(string[] ceps)
-    {
-        var tarefas = ceps
-            .Select(BuscarCepAsync);
-            
-        return await Task.WhenAll(tarefas);
     }
 }
