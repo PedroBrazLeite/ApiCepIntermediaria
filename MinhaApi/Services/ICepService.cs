@@ -9,6 +9,4 @@ public interface ICepService
     Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)> BuscarCepAsync(string cep);
     
     Task<(bool Sucesso, string Cep, EnderecoResponse? Resultado)[]> BuscarCepsAsync(string[] ceps);
-    
-    
 }

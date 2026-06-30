@@ -8,7 +8,6 @@ builder.Services.AddControllers();
 builder.Services.AddRefitClient<ICep>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://opencep.com"));
 
-
 builder.Services.AddScoped<ICepService, CepService>();
 
 var app = builder.Build();

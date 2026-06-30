@@ -14,7 +14,6 @@ public class CepsController : ControllerBase
         _cepService = cepService;
     }
     
-    
     [HttpGet]
     public async Task<IActionResult> GetCepsAsync([FromQuery(Name = "cep[]")] string[]? cep)
     {

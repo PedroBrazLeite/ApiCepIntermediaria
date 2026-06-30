@@ -39,7 +39,7 @@ public class CepService : ICepService
         try
         {
 
-            var endereco = await _client.ObterPorCep(cep);
+            var endereco = await _client.ObterPorCepAsync(cep);
             return (true, cep, endereco);
         }
         catch (ApiException ex)
@@ -57,6 +57,4 @@ public class CepService : ICepService
             
         return await Task.WhenAll(tarefas);
     }
-
- 
 }
